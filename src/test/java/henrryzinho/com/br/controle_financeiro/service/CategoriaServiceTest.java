@@ -7,6 +7,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
+import henrryzinho.com.br.controle_financeiro.exception.CategoriaNaoEncontradaException;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import henrryzinho.com.br.controle_financeiro.dto.CategoriaRequestDTO;
 import henrryzinho.com.br.controle_financeiro.model.Categoria;
 
@@ -46,10 +49,10 @@ class CategoriaServiceTest {
     @Test
     void deveListarCategoriaComSucesso() {
         // Arrange: prepara a entrada e configura o comportamento do Repository falso
-        Categoria alimentação = new Categoria("Alimentação");
+        Categoria alimentacao = new Categoria("Alimentação");
         Categoria transporte = new Categoria("Transporte");
 
-        when(categoriaRepository.findAll()).thenReturn(List.of(alimentação, transporte));
+        when(categoriaRepository.findAll()).thenReturn(List.of(alimentacao, transporte));
 
         // Act: chama o método que está sendo testado
         List<CategoriaResponseDTO> resposta = categoriaService.listar();
@@ -60,6 +63,37 @@ class CategoriaServiceTest {
         assertEquals("Transporte", resposta.get(1).nome());
 
         verify(categoriaRepository).findAll();
+    }
+
+    @Test
+    void deveBuscarCategoriaPorIdComSucesso() {
+        //arrange: prepara a entrada e configura o comportamento do Repository falso
+        Long id = 1L;
+        Categoria comida = new Categoria("Alimentação");
+        ReflectionTestUtils.setField(comida, "id", id); // Define o ID da categoria comida
+
+        when(categoriaRepository.findById(id))
+                .thenReturn(java.util.Optional.of(comida)); // Simula que a categoria FOI encontrada
+
+        //Act: chama o método que está sendo testado
+        CategoriaResponseDTO resposta = categoriaService.buscarPorId(id);
+
+        //Assert: verifica se o resultado é o esperado
+        assertEquals("Alimentação", resposta.nome());
+        verify(categoriaRepository).findById(id);
+        assertEquals(id, resposta.id());
+    }
+
+    @Test
+    void deveLancarExcecaoQuandoCategoriaNaoEncontrada(){
+        Long id = 999L;
+
+        when(categoriaRepository.findById(id))
+                .thenReturn(java.util.Optional.empty()); // Simula que a categoria NÃO foi encontrada
+        assertThrows(
+                CategoriaNaoEncontradaException.class,
+                () -> categoriaService.buscarPorId(id)
+        );
     }
 
 

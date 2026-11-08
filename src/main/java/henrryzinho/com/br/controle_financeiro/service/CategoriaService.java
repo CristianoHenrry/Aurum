@@ -6,7 +6,7 @@ import henrryzinho.com.br.controle_financeiro.model.Categoria;
 import henrryzinho.com.br.controle_financeiro.repository.CategoriaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import henrryzinho.com.br.controle_financeiro.exception.CategoriaNaoEncontradaException;
 import java.util.List;
 
 
@@ -35,4 +35,15 @@ public class CategoriaService {
                 .map(categoria -> new CategoriaResponseDTO(categoria.getId(), categoria.getNome()))
                 .toList();
     }
+
+    // esse bloco de código é responsável por buscar uma categoria pelo seu ID. Ele recebe o ID da categoria como parâmetro,
+    // consulta o repositório para encontrar a entidade correspondente e, se encontrada, retorna um DTO de resposta contendo o ID e o nome da categoria. Caso a categoria não seja encontrada, lança uma exceção CategoriaNaoEncontradaException.
+   @Transactional(readOnly = true)
+    public CategoriaResponseDTO buscarPorId(Long id) {
+        Categoria categoria = categoriaRepository.findById(id)
+                .orElseThrow(() -> new CategoriaNaoEncontradaException(id)) ;
+        return new CategoriaResponseDTO(categoria.getId(), categoria.getNome());
+    }
+
+
 }

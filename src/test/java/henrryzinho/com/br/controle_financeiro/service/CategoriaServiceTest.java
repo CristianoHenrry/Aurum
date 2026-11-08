@@ -9,16 +9,18 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import henrryzinho.com.br.controle_financeiro.exception.CategoriaNaoEncontradaException;
+
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import henrryzinho.com.br.controle_financeiro.dto.CategoriaRequestDTO;
 import henrryzinho.com.br.controle_financeiro.model.Categoria;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -72,8 +74,7 @@ class CategoriaServiceTest {
         Categoria comida = new Categoria("Alimentação");
         ReflectionTestUtils.setField(comida, "id", id); // Define o ID da categoria comida
 
-        when(categoriaRepository.findById(id))
-                .thenReturn(java.util.Optional.of(comida)); // Simula que a categoria FOI encontrada
+        when(categoriaRepository.findById(id)).thenReturn(java.util.Optional.of(comida)); // Simula que a categoria FOI encontrada
 
         //Act: chama o método que está sendo testado
         CategoriaResponseDTO resposta = categoriaService.buscarPorId(id);
@@ -85,15 +86,43 @@ class CategoriaServiceTest {
     }
 
     @Test
-    void deveLancarExcecaoQuandoCategoriaNaoEncontrada(){
+    void deveLancarExcecaoQuandoCategoriaNaoEncontrada() {
         Long id = 999L;
 
-        when(categoriaRepository.findById(id))
-                .thenReturn(java.util.Optional.empty()); // Simula que a categoria NÃO foi encontrada
-        assertThrows(
-                CategoriaNaoEncontradaException.class,
-                () -> categoriaService.buscarPorId(id)
-        );
+        when(categoriaRepository.findById(id)).thenReturn(java.util.Optional.empty()); // Simula que a categoria NÃO foi encontrada
+        assertThrows(CategoriaNaoEncontradaException.class, () -> categoriaService.buscarPorId(id));
+    }
+
+    @Test
+    void deveAtualizarCategoriaComSucesso() {
+        Long id = 1L;
+        Categoria categoriaExistente = new Categoria("Alimentação");
+        ReflectionTestUtils.setField(categoriaExistente, "id", id);
+        CategoriaRequestDTO dto = new CategoriaRequestDTO("Transporte");
+
+        when(categoriaRepository.findById(id)).thenReturn(java.util.Optional.of(categoriaExistente));
+        when(categoriaRepository.save(any(Categoria.class))).thenReturn(categoriaExistente);
+
+        //Act
+        CategoriaResponseDTO resposta = categoriaService.atualizar(id, dto);
+
+        //Assert
+        assertEquals(id, resposta.id());
+        assertEquals(dto.nome(), resposta.nome());
+
+        verify(categoriaRepository).findById(id);
+        verify(categoriaRepository).save(categoriaExistente);
+
+
+    }
+    @Test
+    void deveLancarExcecaoAoAtualizarCategoriaInexistente(){
+        Long id = 555L;
+        CategoriaRequestDTO inexistente = new CategoriaRequestDTO("transporte");
+        when(categoriaRepository.findById(id)).thenReturn(Optional.empty());
+
+        assertThrows(CategoriaNaoEncontradaException.class, () -> categoriaService.atualizar(id, inexistente));
+        verify(categoriaRepository, never()).save(any(Categoria.class));
     }
 
 

@@ -27,12 +27,18 @@ public class CategoriaController {
 
     @GetMapping()
     public List<CategoriaResponseDTO> listar() {
+        
         return categoriaService.listar();
     }
 
     @GetMapping("/{id}")
     public CategoriaResponseDTO buscarPorId(@PathVariable Long id) {
+
         return categoriaService.buscarPorId(id);
     }
 
+    @PutMapping("/{id}")
+    public CategoriaResponseDTO atualizar(@PathVariable Long id, @RequestBody @Valid CategoriaRequestDTO dto) {
+        return categoriaService.atualizar(id, dto);
+    }
 }

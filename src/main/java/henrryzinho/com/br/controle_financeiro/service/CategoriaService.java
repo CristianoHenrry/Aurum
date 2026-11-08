@@ -44,6 +44,16 @@ public class CategoriaService {
                 .orElseThrow(() -> new CategoriaNaoEncontradaException(id)) ;
         return new CategoriaResponseDTO(categoria.getId(), categoria.getNome());
     }
+    @Transactional
+    public CategoriaResponseDTO atualizar(Long id, CategoriaRequestDTO dto) {
+        Categoria categoria = categoriaRepository.findById(id)
+                .orElseThrow(() -> new CategoriaNaoEncontradaException(id));
+        categoria.setNome(dto.nome());
+        Categoria categoriaAtualizada = categoriaRepository.save(categoria);
+        return new CategoriaResponseDTO(categoriaAtualizada.getId(), categoriaAtualizada.getNome());
+    }
+
+
 
 
 }

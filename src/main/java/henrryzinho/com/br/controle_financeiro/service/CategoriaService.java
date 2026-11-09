@@ -52,6 +52,12 @@ public class CategoriaService {
         Categoria categoriaAtualizada = categoriaRepository.save(categoria);
         return new CategoriaResponseDTO(categoriaAtualizada.getId(), categoriaAtualizada.getNome());
     }
+    @Transactional
+    public void excluir(Long id){
+        Categoria categoria = categoriaRepository.findById(id)
+                .orElseThrow(() -> new CategoriaNaoEncontradaException(id));
+        categoriaRepository.delete(categoria);
+    }
 
 
 

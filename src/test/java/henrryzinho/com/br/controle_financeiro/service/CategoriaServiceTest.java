@@ -1,6 +1,9 @@
 package henrryzinho.com.br.controle_financeiro.service;
 
+import henrryzinho.com.br.controle_financeiro.dto.CategoriaRequestDTO;
 import henrryzinho.com.br.controle_financeiro.dto.CategoriaResponseDTO;
+import henrryzinho.com.br.controle_financeiro.exception.CategoriaNaoEncontradaException;
+import henrryzinho.com.br.controle_financeiro.model.Categoria;
 import henrryzinho.com.br.controle_financeiro.repository.CategoriaRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -8,17 +11,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-import henrryzinho.com.br.controle_financeiro.exception.CategoriaNaoEncontradaException;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
-import henrryzinho.com.br.controle_financeiro.dto.CategoriaRequestDTO;
-import henrryzinho.com.br.controle_financeiro.model.Categoria;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -89,7 +87,8 @@ class CategoriaServiceTest {
     void deveLancarExcecaoQuandoCategoriaNaoEncontrada() {
         Long id = 999L;
 
-        when(categoriaRepository.findById(id)).thenReturn(java.util.Optional.empty()); // Simula que a categoria NÃO foi encontrada
+        when(categoriaRepository.findById(id))
+                .thenReturn(java.util.Optional.empty()); // Simula que a categoria NÃO foi encontrada
         assertThrows(CategoriaNaoEncontradaException.class, () -> categoriaService.buscarPorId(id));
     }
 
@@ -112,11 +111,10 @@ class CategoriaServiceTest {
 
         verify(categoriaRepository).findById(id);
         verify(categoriaRepository).save(categoriaExistente);
-
-
     }
+
     @Test
-    void deveLancarExcecaoAoAtualizarCategoriaInexistente(){
+    void deveLancarExcecaoAoAtualizarCategoriaInexistente() {
         Long id = 555L;
         CategoriaRequestDTO inexistente = new CategoriaRequestDTO("transporte");
         when(categoriaRepository.findById(id)).thenReturn(Optional.empty());
@@ -125,5 +123,24 @@ class CategoriaServiceTest {
         verify(categoriaRepository, never()).save(any(Categoria.class));
     }
 
+    @Test
+    void deveExcluirCategoriaComSucesso() {
+        Long id = 1L;
+        Categoria categoriaExistente = new Categoria("Outros");
+        when(categoriaRepository.findById(id)).thenReturn(Optional.of(categoriaExistente));
 
+        //Act
+        categoriaService.excluir(id);
+
+        verify(categoriaRepository).findById(id);
+        verify(categoriaRepository).delete(categoriaExistente);
+    }
+    @Test
+    void  deveLancarExcecaoAoExcluirCategoriaInexistente(){
+        Long id = 3L;
+        when(categoriaRepository.findById(id)).thenReturn(Optional.empty());
+
+        assertThrows(CategoriaNaoEncontradaException.class, () -> categoriaService.excluir(id));
+        verify(categoriaRepository, never()).delete(any(Categoria.class));
+    }
 }

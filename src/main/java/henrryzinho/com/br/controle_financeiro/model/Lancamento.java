@@ -33,4 +33,38 @@ public class Lancamento {
     protected Lancamento() {
     }
 
+    public Long getId() {
+        return id;
+    }
+
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public BigDecimal getValor() {
+        return valor;
+    }
+
+    public LocalDate getData() {
+        return data;
+    }
+
+    public TipoLancamento getTipo() {
+        return tipo;
+    }
+
+    public Categoria getCategoria() {
+        return categoria;
+    }
+
+    public Lancamento(String descricao, BigDecimal valor, LocalDate data, TipoLancamento tipo, Categoria categoria) {
+        this.categoria = categoria;
+        this.tipo = tipo;
+        this.descricao = descricao;
+        this.data = data;
+        this.valor = valor;
+
+
+    }
 }
+

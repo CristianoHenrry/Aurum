@@ -31,6 +31,7 @@ public class Lancamento {
 
 
     protected Lancamento() {
+
     }
 
     public Long getId() {

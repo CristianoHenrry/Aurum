@@ -1,6 +1,7 @@
 package henrryzinho.com.br.controle_financeiro.service;
 
 import henrryzinho.com.br.controle_financeiro.dto.LancamentoRequestDTO;
+import henrryzinho.com.br.controle_financeiro.dto.LancamentoResponseDTO;
 import henrryzinho.com.br.controle_financeiro.model.Categoria;
 import henrryzinho.com.br.controle_financeiro.model.Lancamento;
 import henrryzinho.com.br.controle_financeiro.model.TipoLancamento;
@@ -17,7 +18,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -44,6 +47,21 @@ public class LancamentoServiceTest {
         ReflectionTestUtils.setField(lancamentoSalvo, "id", 10L);
 
         when(lancamentoRepository.save(any(Lancamento.class))).thenReturn(lancamentoSalvo);
+
+        //Act
+        LancamentoResponseDTO resposta = lancamentoService.cadastrar(dto);
+
+        //Assert
+        assertEquals(10L, resposta.id());
+        assertEquals(dto.descricao(), resposta.descricao());
+        assertEquals(dto.valor(), resposta.valor());
+        assertEquals(dto.data(), resposta.data());
+        assertEquals(dto.tipo(), resposta.tipo());
+        assertEquals(categoriaId, resposta.categoria().id());
+        assertEquals(alimento.getNome(), resposta.categoria().nome());
+
+        verify(categoriaRepository).findById(categoriaId);
+        verify(lancamentoRepository).save(any(Lancamento.class));
     }
 
 }

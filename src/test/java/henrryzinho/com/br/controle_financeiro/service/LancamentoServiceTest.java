@@ -2,6 +2,7 @@ package henrryzinho.com.br.controle_financeiro.service;
 
 import henrryzinho.com.br.controle_financeiro.dto.LancamentoRequestDTO;
 import henrryzinho.com.br.controle_financeiro.dto.LancamentoResponseDTO;
+import henrryzinho.com.br.controle_financeiro.exception.CategoriaNaoEncontradaException;
 import henrryzinho.com.br.controle_financeiro.model.Categoria;
 import henrryzinho.com.br.controle_financeiro.model.Lancamento;
 import henrryzinho.com.br.controle_financeiro.model.TipoLancamento;
@@ -19,9 +20,9 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class LancamentoServiceTest {
@@ -30,6 +31,7 @@ public class LancamentoServiceTest {
 
     @Mock
     private CategoriaRepository categoriaRepository;
+
 
     @InjectMocks
     private LancamentoService lancamentoService;
@@ -62,6 +64,16 @@ public class LancamentoServiceTest {
 
         verify(categoriaRepository).findById(categoriaId);
         verify(lancamentoRepository).save(any(Lancamento.class));
+    }
+
+    @Test
+    void deveLancarExcecaoAoCadastrarComCategoriaInexistente(){
+        Long categoriaId = 1L;
+        LancamentoRequestDTO dto = new LancamentoRequestDTO("Transporte", new BigDecimal("200.00"), LocalDate.of(2026, 11, 18), TipoLancamento.DESPESA, categoriaId);
+        when(categoriaRepository.findById(categoriaId)).thenReturn(Optional.empty());
+
+        assertThrows(CategoriaNaoEncontradaException.class, () -> lancamentoService.cadastrar(dto));
+        verify(lancamentoRepository, never()).save(any(Lancamento.class));
     }
 
 }
